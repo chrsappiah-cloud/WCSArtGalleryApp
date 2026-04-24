@@ -32,7 +32,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Edit `.env` and set `OPENAI_API_KEY` when you use image generation. If you change SQL columns, delete **`backend/wcs_gallery.db`** once so `create_all` can recreate the schema.
+Edit `.env` and set `OPENAI_API_KEY` when you use image generation. Use **`OPENAI_IMAGE_MODEL`** (`gpt-image-1.5`, `gpt-image-1`, `dall-e-3`, …); sizes are mapped per model. Generated files are always stored under **`media/generated/`** (even when OpenAI returns a temporary URL). Set **`PUBLIC_BASE_URL`** (no trailing slash) if clients reach the API through a tunnel, a deployed host, or your Mac’s LAN IP so `/media/...` links resolve correctly on a physical device. If you change SQL columns, delete **`backend/wcs_gallery.db`** once so `create_all` can recreate the schema.
 
 **Automated checks (backend):** use Python **3.12** (`python3.12 -m venv .venv`), then `pip install -r requirements-dev.txt` and `pytest tests/ -q`. The bundled `.venv` may be **3.14**, which cannot install pinned `pydantic-core`; recreate the venv on 3.12 locally or rely on **GitHub Actions** (`.github/workflows/wcs-backend-tests.yml`).
 
