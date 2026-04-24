@@ -55,6 +55,24 @@ struct WCSBackendArtwork: Codable, Identifiable, Hashable {
     }
 }
 
+extension WCSBackendArtwork {
+    nonisolated init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        artistName = try c.decode(String.self, forKey: .artistName)
+        description = try c.decodeIfPresent(String.self, forKey: .description)
+        medium = try c.decodeIfPresent(String.self, forKey: .medium)
+        year = try c.decodeIfPresent(String.self, forKey: .year)
+        imageURL = try c.decode(String.self, forKey: .imageURL)
+        thumbnailURL = try c.decodeIfPresent(String.self, forKey: .thumbnailURL)
+        sourceType = try c.decode(String.self, forKey: .sourceType)
+        externalSource = try c.decodeIfPresent(String.self, forKey: .externalSource)
+        promptUsed = try c.decodeIfPresent(String.self, forKey: .promptUsed)
+        createdAt = try c.decode(String.self, forKey: .createdAt)
+    }
+}
+
 struct WCSPromptRequest: Codable {
     let concept: String
     let style: String
@@ -65,6 +83,15 @@ struct WCSPromptRequest: Codable {
     enum CodingKeys: String, CodingKey {
         case concept, style, mood, palette
         case aspectRatio = "aspect_ratio"
+    }
+
+    nonisolated func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(concept, forKey: .concept)
+        try c.encode(style, forKey: .style)
+        try c.encode(mood, forKey: .mood)
+        try c.encode(palette, forKey: .palette)
+        try c.encode(aspectRatio, forKey: .aspectRatio)
     }
 }
 
