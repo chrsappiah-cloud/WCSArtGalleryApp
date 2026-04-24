@@ -5,6 +5,21 @@ final class WCSBackendAPIClient {
 
     private init() {}
 
+    /// FastAPI may return `detail` as a string (HTTPException) or a list (validation errors).
+    private static func flattenFastAPIDetail(_ value: Any?) -> String? {
+        if let s = value as? String { return s }
+        if let arr = value as? [[String: Any]] {
+            return arr.compactMap { row in
+                if let msg = row["msg"] as? String { return msg }
+                if let loc = row["loc"] as? [Any] {
+                    return "\(loc): \(row["msg"] as? String ?? "")"
+                }
+                return nil
+            }.joined(separator: "; ")
+        }
+        return nil
+    }
+
     struct APIError: LocalizedError {
         let message: String
         var errorDescription: String? { message }
@@ -16,7 +31,7 @@ final class WCSBackendAPIClient {
         }
         guard (200 ... 299).contains(http.statusCode) else {
             if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let detail = obj["detail"] as? String,
+               let detail = Self.flattenFastAPIDetail(obj["detail"]),
                !detail.isEmpty
             {
                 throw APIError(message: detail)

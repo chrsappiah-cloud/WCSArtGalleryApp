@@ -12,6 +12,18 @@ from app.services import openai_service as svc
 router = APIRouter(tags=["ai"])
 
 
+def _absolute_media_url(request: Request, local_path: str) -> str:
+    """Build a stable absolute URL for a file under media_root."""
+    root = Path(settings.media_root).resolve()
+    resolved = Path(local_path).resolve()
+    try:
+        rel = "/" + resolved.relative_to(root).as_posix()
+    except ValueError:
+        rel = "/media/generated/" + Path(local_path).name
+    origin = (settings.public_base_url or str(request.base_url).rstrip("/")).rstrip("/")
+    return f"{origin}{rel}"
+
+
 @router.post("/ai/prompt", response_model=PromptResponse)
 async def build_ai_prompt(payload: PromptRequest) -> PromptResponse:
     final = svc.build_prompt(
@@ -30,18 +42,13 @@ async def generate_ai_image(
         payload.concept, payload.style, payload.mood, payload.palette
     )
     try:
-        local_path, remote = svc.generate_image(final, payload.aspect_ratio)
+        local_path, _remote = svc.generate_image(final, payload.aspect_ratio)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Unexpected generation error: {exc}") from exc
 
-    if remote:
-        image_ref = remote
-    else:
-        rel = "/" + Path(local_path).relative_to(Path(settings.media_root)).as_posix()
-        base = str(request.base_url).rstrip("/")
-        image_ref = f"{base}{rel}"
+    image_ref = _absolute_media_url(request, local_path)
 
     row = ArtworkORM(
         title=payload.concept[:120],
