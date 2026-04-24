@@ -33,6 +33,8 @@ async def generate_ai_image(
         local_path, remote = svc.generate_image(final, payload.aspect_ratio)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Unexpected generation error: {exc}") from exc
 
     if remote:
         image_ref = remote

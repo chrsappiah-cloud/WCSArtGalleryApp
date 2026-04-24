@@ -24,6 +24,7 @@ final class WCSBackendAIStudioViewModel: ObservableObject {
 
     func buildPrompt() async {
         isWorking = true
+        errorMessage = nil
         defer { isWorking = false }
         do {
             let response = try await WCSBackendAPIClient.shared.buildPrompt(request: promptPayload)
@@ -35,6 +36,8 @@ final class WCSBackendAIStudioViewModel: ObservableObject {
 
     func generate() async {
         isWorking = true
+        errorMessage = nil
+        generatedImageURL = nil
         defer { isWorking = false }
         do {
             generatedImageURL = try await WCSBackendAPIClient.shared.generateImage(request: promptPayload)
