@@ -2,6 +2,11 @@ import SwiftUI
 
 struct ArtworkDetailView: View {
     let artwork: Artwork
+    @EnvironmentObject private var galleryViewModel: GalleryViewModel
+
+    private var bookmarked: Bool {
+        galleryViewModel.artworks.first { $0.id == artwork.id }?.isSaved ?? artwork.isSaved
+    }
 
     var body: some View {
         ScrollView {
@@ -10,10 +15,11 @@ struct ArtworkDetailView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(artwork.title)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundStyle(WCSStudioTheme.textPrimary)
                     Text(artwork.artist)
                         .font(.title3.weight(.medium))
+                        .italic()
                         .foregroundStyle(WCSStudioTheme.heroGradient)
                 }
 
@@ -42,6 +48,18 @@ struct ArtworkDetailView: View {
         .navigationTitle("Artwork")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(WCSStudioTheme.panel.opacity(0.4), for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    galleryViewModel.toggleSaved(for: artwork.id)
+                } label: {
+                    Image(systemName: bookmarked ? "bookmark.fill" : "bookmark")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(bookmarked ? WCSStudioTheme.champagne : WCSStudioTheme.accent)
+                }
+                .accessibilityLabel(bookmarked ? "Remove from saved" : "Save artwork")
+            }
+        }
     }
 
     @ViewBuilder
@@ -61,20 +79,7 @@ struct ArtworkDetailView: View {
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                WCSStudioTheme.accent.opacity(0.5),
-                                WCSStudioTheme.accentSecondary.opacity(0.35),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.2,
-                    ),
-            )
+            .wcsLuxeFrame(cornerRadius: 20)
             .shadow(color: WCSStudioTheme.accent.opacity(0.2), radius: 24, y: 14)
         } else {
             placeholderHero(showProgress: false)
@@ -131,6 +136,7 @@ struct ArtworkDetailView: View {
                 imageURL: nil
             )
         )
+        .environmentObject(GalleryViewModel(service: MockGalleryService()))
     }
     .preferredColorScheme(.dark)
 }

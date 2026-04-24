@@ -13,7 +13,7 @@ struct Artwork: Identifiable, Hashable {
     /// Remote or `/media/...` URL when loaded from the FastAPI backend / open access.
     let imageURL: String?
 
-    init(
+    nonisolated init(
         id: UUID,
         title: String,
         artist: String,
@@ -69,5 +69,20 @@ extension Artwork {
             return "\(origin)\(raw)"
         }
         return raw
+    }
+
+    nonisolated func withSaved(_ saved: Bool) -> Artwork {
+        Artwork(
+            id: id,
+            title: title,
+            artist: artist,
+            style: style,
+            year: year,
+            medium: medium,
+            description: description,
+            isFeatured: isFeatured,
+            isSaved: saved,
+            imageURL: imageURL
+        )
     }
 }

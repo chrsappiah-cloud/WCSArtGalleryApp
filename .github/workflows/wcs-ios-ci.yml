@@ -32,7 +32,7 @@ jobs:
         run: |
           set -eo pipefail
           xcrun simctl list devices available
-          for name in "iPhone 16" "iPhone 16 Pro" "iPhone 15" "iPhone 17" "iPhone 17 Pro"; do
+          for name in "iPhone 16" "iPhone 16 Pro" "iPhone 15" "iPhone 17" "iPhone 17 Pro" "iPhone SE (3rd generation)"; do
             if xcrun simctl list devices available | grep -q "${name}"; then
               echo "name=${name}" >> "$GITHUB_OUTPUT"
               exit 0

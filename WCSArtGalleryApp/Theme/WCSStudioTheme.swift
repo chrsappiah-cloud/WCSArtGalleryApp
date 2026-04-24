@@ -3,14 +3,18 @@ import UIKit
 
 /// Dark, high-contrast “AI studio” chrome (original styling — not affiliated with any third-party product).
 enum WCSStudioTheme {
-    static let void = Color(red: 0.04, green: 0.04, blue: 0.07)
+    static let void = Color(red: 0.03, green: 0.03, blue: 0.06)
+    static let onyx = Color(red: 0.05, green: 0.05, blue: 0.09)
     static let panel = Color(red: 0.09, green: 0.09, blue: 0.14)
     static let panelElevated = Color(red: 0.12, green: 0.11, blue: 0.18)
     static let stroke = Color.white.opacity(0.08)
-    static let textPrimary = Color(red: 0.96, green: 0.96, blue: 0.98)
+    static let textPrimary = Color(red: 0.97, green: 0.96, blue: 0.99)
     static let textMuted = Color(red: 0.58, green: 0.58, blue: 0.68)
     static let accent = Color(red: 0.62, green: 0.48, blue: 1.0)
     static let accentSecondary = Color(red: 0.35, green: 0.85, blue: 0.95)
+    /// Warm metallic highlight for borders and typographic accents.
+    static let champagne = Color(red: 0.93, green: 0.82, blue: 0.62)
+    static let pearl = Color(red: 0.88, green: 0.9, blue: 0.96)
 
     static var heroGradient: LinearGradient {
         LinearGradient(
@@ -26,9 +30,21 @@ enum WCSStudioTheme {
     static var screenWash: LinearGradient {
         LinearGradient(
             colors: [
-                Color(red: 0.05, green: 0.04, blue: 0.12),
+                Color(red: 0.06, green: 0.05, blue: 0.12),
                 void,
-                Color(red: 0.06, green: 0.05, blue: 0.11),
+                Color(red: 0.07, green: 0.05, blue: 0.1),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    static var frameGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                champagne.opacity(0.55),
+                accent.opacity(0.35),
+                accentSecondary.opacity(0.3),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -91,6 +107,16 @@ struct WCSScreenBackground: View {
                 endRadius: 420
             )
             .ignoresSafeArea()
+            RadialGradient(
+                colors: [
+                    WCSStudioTheme.champagne.opacity(0.08),
+                    Color.clear,
+                ],
+                center: .bottomLeading,
+                startRadius: 20,
+                endRadius: 360
+            )
+            .ignoresSafeArea()
         }
     }
 }
@@ -119,11 +145,21 @@ struct WCSGlassCard: ViewModifier {
                     ),
             )
             .shadow(color: WCSStudioTheme.accent.opacity(0.12), radius: 18, y: 10)
+            .shadow(color: WCSStudioTheme.champagne.opacity(0.06), radius: 28, y: 14)
     }
 }
 
 extension View {
     func wcsGlassCard() -> some View {
         modifier(WCSGlassCard())
+    }
+
+    /// Narrow inner frame for hero imagery and premium tiles.
+    func wcsLuxeFrame(cornerRadius: CGFloat = 20) -> some View {
+        overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(WCSStudioTheme.frameGradient, lineWidth: 1.15),
+        )
+        .shadow(color: WCSStudioTheme.champagne.opacity(0.12), radius: 22, y: 12)
     }
 }

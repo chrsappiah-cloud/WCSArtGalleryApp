@@ -24,6 +24,35 @@ struct WCSBackendArtwork: Codable, Identifiable, Hashable {
         case externalSource = "external_source"
         case promptUsed = "prompt_used"
     }
+
+    /// Synthetic rows for live open-access previews (not from JSON decode).
+    nonisolated init(
+        id: Int,
+        title: String,
+        artistName: String,
+        description: String?,
+        medium: String?,
+        year: String?,
+        imageURL: String,
+        thumbnailURL: String?,
+        sourceType: String,
+        externalSource: String?,
+        promptUsed: String?,
+        createdAt: String
+    ) {
+        self.id = id
+        self.title = title
+        self.artistName = artistName
+        self.description = description
+        self.medium = medium
+        self.year = year
+        self.imageURL = imageURL
+        self.thumbnailURL = thumbnailURL
+        self.sourceType = sourceType
+        self.externalSource = externalSource
+        self.promptUsed = promptUsed
+        self.createdAt = createdAt
+    }
 }
 
 struct WCSPromptRequest: Codable {

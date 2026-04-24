@@ -8,7 +8,7 @@ struct ExploreView: View {
         NavigationStack {
             List {
                 Section {
-                    ForEach(viewModel.artworks) { artwork in
+                    ForEach(viewModel.filteredForExplore) { artwork in
                         NavigationLink {
                             ArtworkDetailView(artwork: artwork)
                         } label: {
@@ -27,10 +27,17 @@ struct ExploreView: View {
                         }
                     }
                 } header: {
-                    Text("Library")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(WCSStudioTheme.textMuted)
-                        .textCase(.uppercase)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Library")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WCSStudioTheme.textMuted)
+                            .textCase(.uppercase)
+                        if viewModel.browseCategory != .all {
+                            Text(viewModel.browseCategory.displayTitle)
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(WCSStudioTheme.champagne.opacity(0.95))
+                        }
+                    }
                 }
             }
             .listStyle(.plain)

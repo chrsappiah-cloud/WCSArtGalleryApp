@@ -3,6 +3,7 @@ import SwiftUI
 
 /// Ingestion surface: open-access Met sample + future uploads.
 struct WCSFusionUploadHubView: View {
+    @EnvironmentObject private var galleryViewModel: GalleryViewModel
     @State private var selectedItem: PhotosPickerItem?
     @State private var isImporting = false
     @State private var statusMessage = ""
@@ -22,7 +23,7 @@ struct WCSFusionUploadHubView: View {
                                 Text("Import Met open access sample")
                                     .font(.headline.weight(.semibold))
                                     .foregroundStyle(WCSStudioTheme.textPrimary)
-                                Text("Pulls public-domain highlights into your FastAPI gallery.")
+                                Text("Pulls public-domain highlights into your FastAPI gallery and refreshes Home / Explore.")
                                     .font(.caption)
                                     .foregroundStyle(WCSStudioTheme.textMuted)
                             }
@@ -86,8 +87,9 @@ struct WCSFusionUploadHubView: View {
         defer { isImporting = false }
         do {
             let n = try await WCSBackendAPIClient.shared.importMetOpenAccessSample(limit: 6)
+            await galleryViewModel.loadArtworks()
             statusMessage =
-                "Imported \(n) pieces. Open the Home tab and pull to refresh, or use Profile → Refresh collection."
+                "Imported \(n) pieces. Home / Explore were refreshed; open Saved and tap the bookmark on favorites."
         } catch {
             statusMessage =
                 "Import failed: \(error.localizedDescription). Ensure the API is running at \(WCSBackendAPIConfig.apiOrigin.absoluteString)."

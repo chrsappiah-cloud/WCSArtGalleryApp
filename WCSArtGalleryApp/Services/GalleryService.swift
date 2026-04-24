@@ -5,6 +5,8 @@ protocol GalleryService: Sendable {
 }
 
 struct MockGalleryService: GalleryService {
+    nonisolated init() {}
+
     func fetchArtworks() async throws -> [Artwork] {
         [
             Artwork(
@@ -16,7 +18,8 @@ struct MockGalleryService: GalleryService {
                 medium: "Acrylic on Canvas",
                 description: "A rich tapestry-inspired composition that explores heritage and bold modern form.",
                 isFeatured: true,
-                isSaved: true
+                isSaved: true,
+                imageURL: "https://images.metmuseum.org/CRDImages/ad/original/DP251120.jpg"
             ),
             Artwork(
                 id: UUID(),
@@ -27,7 +30,8 @@ struct MockGalleryService: GalleryService {
                 medium: "Digital Print",
                 description: "A luminous landscape study with layered atmospheric light and expressive brush rhythm.",
                 isFeatured: true,
-                isSaved: false
+                isSaved: false,
+                imageURL: "https://images.metmuseum.org/CRDImages/ep/original/DP-14201-001.jpg"
             ),
             Artwork(
                 id: UUID(),
@@ -38,7 +42,8 @@ struct MockGalleryService: GalleryService {
                 medium: "Ink, Gold Leaf, Collage",
                 description: "Textural storytelling through symbols and memory fragments rooted in intergenerational identity.",
                 isFeatured: true,
-                isSaved: false
+                isSaved: false,
+                imageURL: "https://images.metmuseum.org/CRDImages/as/original/DP251049.jpg"
             ),
             Artwork(
                 id: UUID(),
@@ -49,8 +54,9 @@ struct MockGalleryService: GalleryService {
                 medium: "Bronze Cast",
                 description: "A minimalist form language focused on posture, tension, and serenity.",
                 isFeatured: false,
-                isSaved: false
-            )
+                isSaved: false,
+                imageURL: "https://images.metmuseum.org/CRDImages/aa/original/DT5091.jpg"
+            ),
         ]
     }
 }

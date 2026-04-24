@@ -4,14 +4,6 @@ import SwiftUI
 struct GalleryHomeView: View {
     @ObservedObject var viewModel: GalleryViewModel
 
-    private let categories = [
-        "Paintings",
-        "Sculpture",
-        "Photography",
-        "Digital Art",
-        "Textile Art",
-    ]
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -23,9 +15,9 @@ struct GalleryHomeView: View {
                             .textCase(.uppercase)
                             .tracking(1.6)
                         Text("WCS Art Gallery")
-                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .font(.system(size: 34, weight: .bold, design: .serif))
                             .foregroundStyle(WCSStudioTheme.heroGradient)
-                        Text("Curated surfaces, open collections, and AI-assisted creation — in one flow.")
+                        Text("The Met · Art Institute of Chicago · Cleveland Museum — live open access, fused with your studio.")
                             .font(.subheadline)
                             .foregroundStyle(WCSStudioTheme.textMuted)
                             .fixedSize(horizontal: false, vertical: true)
@@ -160,25 +152,41 @@ struct GalleryHomeView: View {
 
     private var categoriesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Modes")
+            Text("Browse by mode")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(WCSStudioTheme.textPrimary)
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 148), spacing: 12)], spacing: 12) {
-                ForEach(categories, id: \.self) { category in
-                    Text(category)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(WCSStudioTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(WCSStudioTheme.panelElevated.opacity(0.75))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(WCSStudioTheme.stroke, lineWidth: 1)
-                                )
-                        )
+                ForEach(GalleryBrowseCategory.allCases.filter { $0 != .all }, id: \.rawValue) { category in
+                    Button {
+                        viewModel.setBrowseCategory(category, jumpToExplore: true)
+                    } label: {
+                        Text(category.displayTitle)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(WCSStudioTheme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(WCSStudioTheme.panelElevated.opacity(0.78))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: [
+                                                        WCSStudioTheme.champagne.opacity(0.45),
+                                                        WCSStudioTheme.stroke,
+                                                        WCSStudioTheme.accent.opacity(0.2),
+                                                    ],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 1,
+                                            ),
+                                    ),
+                            )
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
