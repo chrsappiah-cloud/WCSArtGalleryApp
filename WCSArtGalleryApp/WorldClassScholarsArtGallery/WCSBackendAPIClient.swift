@@ -5,9 +5,30 @@ final class WCSBackendAPIClient {
 
     private init() {}
 
+    struct APIError: LocalizedError {
+        let message: String
+        var errorDescription: String? { message }
+    }
+
+    private func require2xx(_ response: URLResponse, data: Data) throws {
+        guard let http = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let detail = obj["detail"] as? String,
+               !detail.isEmpty
+            {
+                throw APIError(message: detail)
+            }
+            throw APIError(message: "Server error (\(http.statusCode)).")
+        }
+    }
+
     func fetchArtworks() async throws -> [WCSBackendArtwork] {
         let url = WCSBackendAPIConfig.apiBaseURL.appending(path: "artworks")
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await URLSession.shared.data(from: url)
+        try require2xx(response, data: data)
         return try JSONDecoder().decode([WCSBackendArtwork].self, from: data)
     }
 
@@ -16,7 +37,8 @@ final class WCSBackendAPIClient {
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
-        let (data, _) = try await URLSession.shared.data(for: urlRequest)
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        try require2xx(response, data: data)
         return try JSONDecoder().decode(WCSPromptResponse.self, from: data)
     }
 
@@ -25,12 +47,13 @@ final class WCSBackendAPIClient {
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
-        let (data, _) = try await URLSession.shared.data(for: urlRequest)
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        try require2xx(response, data: data)
         let value = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         if let imageURL = value?["image_url"] as? String {
             return URL(string: Artwork.resolvedImageURL(imageURL))
         }
-        return nil
+        throw APIError(message: "Image generation returned no `image_url`.")
     }
 
     /// Pulls open-access Met highlights into the shared database (`POST /api/import/open-access-met-sample`).
@@ -42,9 +65,7 @@ final class WCSBackendAPIClient {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
-        guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+        try require2xx(response, data: data)
         let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         return (obj?["imported"] as? Int) ?? 0
     }

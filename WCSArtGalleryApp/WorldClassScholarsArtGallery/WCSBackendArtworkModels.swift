@@ -16,7 +16,8 @@ struct WCSBackendArtwork: Codable, Identifiable, Hashable {
     let createdAt: String
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, medium, year, createdAt
+        case id, title, description, medium, year
+        case createdAt = "created_at"
         case artistName = "artist_name"
         case imageURL = "image_url"
         case thumbnailURL = "thumbnail_url"

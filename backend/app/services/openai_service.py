@@ -3,10 +3,9 @@ import uuid
 from pathlib import Path
 
 from openai import OpenAI
+from openai import OpenAIError
 
 from app.core.config import settings
-
-client = OpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
 
 SYSTEM_PROMPT = """
 You are the World Class Scholars Art Engine.
@@ -15,6 +14,7 @@ Do not imitate living artists, copyrighted characters, or brand styles.
 Prefer original, exhibition-quality language with clear subject, composition, materiality, light, and mood.
 Return only the final image prompt when asked.
 """.strip()
+ALLOWED_IMAGE_SIZES = {"1024x1024", "1536x1024", "1024x1536"}
 
 
 def build_prompt(concept: str, style: str, mood: str, palette: str) -> str:
@@ -26,14 +26,22 @@ def build_prompt(concept: str, style: str, mood: str, palette: str) -> str:
     )
 
 
-def generate_image(prompt: str, size: str = '1024x1024') -> tuple[str, str | None]:
-    if not client:
-        raise RuntimeError('OPENAI_API_KEY is not configured')
-    result = client.images.generate(
-        model=settings.openai_image_model,
-        prompt=prompt,
-        size=size,
-    )
+def _client() -> OpenAI:
+    if not settings.openai_api_key:
+        raise RuntimeError("OPENAI_API_KEY is not configured")
+    return OpenAI(api_key=settings.openai_api_key)
+
+
+def generate_image(prompt: str, size: str = "1024x1024") -> tuple[str, str | None]:
+    normalized_size = size if size in ALLOWED_IMAGE_SIZES else "1024x1024"
+    try:
+        result = _client().images.generate(
+            model=settings.openai_image_model,
+            prompt=prompt,
+            size=normalized_size,
+        )
+    except OpenAIError as exc:
+        raise RuntimeError(f"OpenAI image generation failed: {exc}") from exc
     item = result.data[0]
 
     if getattr(item, "b64_json", None):
