@@ -1,0 +1,50 @@
+name: WCS iOS build & unit tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: wcs-ios-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (generic iOS Simulator)
+        run: |
+          set -eo pipefail
+          xcodebuild build \
+            -scheme WCSArtGalleryApp \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGN_STYLE=Automatic
+
+      - name: Pick simulator destination
+        id: sim
+        run: |
+          set -eo pipefail
+          xcrun simctl list devices available
+          for name in "iPhone 17" "iPhone 17 Pro" "iPhone 16" "iPhone 16 Pro" "iPhone 15" "iPhone 15 Pro"; do
+            if xcrun simctl list devices available | grep -q "${name}"; then
+              echo "name=${name}" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "name=iPhone 16" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests (WCSArtGalleryAppTests only)
+        run: |
+          set -eo pipefail
+          xcodebuild test \
+            -scheme WCSArtGalleryApp \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -only-testing:WCSArtGalleryAppTests \
+            -resultBundlePath "${{ runner.temp }}/WCSUnitTests.xcresult"

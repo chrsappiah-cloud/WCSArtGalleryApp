@@ -23,14 +23,25 @@ final class WCSArtGalleryAppUITests: XCTestCase {
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testTabBarShowsCoreDestinations() throws {
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
+        XCTAssertTrue(tabBar.buttons["Home"].exists)
+        XCTAssertTrue(tabBar.buttons["Explore"].exists)
+        XCTAssertTrue(tabBar.buttons["Saved"].exists)
+        XCTAssertTrue(tabBar.buttons["Profile"].exists)
+        XCTAssertTrue(tabBar.buttons["Studio"].exists)
+    }
+
+    @MainActor
+    func testSwitchToBackendTab() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["Studio"].tap()
+        XCTAssertTrue(app.tabBars.firstMatch.exists)
     }
 
     @MainActor

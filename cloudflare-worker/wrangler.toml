@@ -1,0 +1,9 @@
+name = "wcs-art-gallery-prototype"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+# Optional: bind D1 later for durable edge storage (see README).
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "wcs-art-gallery-prototype"
+# database_id = "<from wrangler d1 create>"

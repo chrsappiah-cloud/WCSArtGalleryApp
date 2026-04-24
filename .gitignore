@@ -1,0 +1,15 @@
+.DS_Store
+*.xcuserstate
+xcuserdata/
+DerivedData/
+build/
+*.xccheckout
+
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/wcs_gallery.db
+
+cloudflare-worker/node_modules/
+cloudflare-worker/.wrangler/

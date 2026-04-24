@@ -5,57 +5,53 @@
 //  Created by Christopher Appiah-Thompson  on 24/4/2026.
 //
 
+import Combine
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @StateObject private var viewModel = GalleryViewModel()
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        ZStack {
+            WCSScreenBackground()
+            TabView {
+                GalleryHomeView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Home", systemImage: "house.fill")
                     }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    .accessibilityIdentifier("tab_home")
+
+                ExploreView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Explore", systemImage: "square.grid.2x2.fill")
                     }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
+                    .accessibilityIdentifier("tab_explore")
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+                SavedView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Saved", systemImage: "bookmark.fill")
+                    }
+                    .accessibilityIdentifier("tab_saved")
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+                ProfileView()
+                    .tabItem {
+                        Label("Profile", systemImage: "person.crop.circle.fill")
+                    }
+                    .accessibilityIdentifier("tab_profile")
+
+                WCSBackendFusionTabRoot()
+                    .tabItem {
+                        Label("Studio", systemImage: "wand.and.stars")
+                    }
+                    .accessibilityIdentifier("tab_studio")
             }
+            .tint(WCSStudioTheme.accent)
         }
+        .environmentObject(viewModel)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .environmentObject(GalleryViewModel())
 }
