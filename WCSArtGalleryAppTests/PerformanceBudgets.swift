@@ -7,7 +7,9 @@ import Foundation
 
 enum PerformanceBudgets {
     private static var isGitHubCI: Bool {
-        ProcessInfo.processInfo.environment["CI"] == "true"
+        let env = ProcessInfo.processInfo.environment
+        // xcodebuild test sometimes omits `CI`; GitHub always sets `GITHUB_ACTIONS`.
+        return env["CI"] == "true" || env["GITHUB_ACTIONS"] == "true"
     }
 
     /// Mean time per full JSON decode of 500 `WCSBackendArtwork` rows (30 samples).

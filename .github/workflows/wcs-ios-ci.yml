@@ -27,24 +27,62 @@ jobs:
             CODE_SIGNING_ALLOWED=YES \
             CODE_SIGN_STYLE=Automatic
 
-      - name: Pick simulator destination
+      - name: Pick simulator (UDID avoids ambiguous name= destinations)
         id: sim
         run: |
           set -eo pipefail
           xcrun simctl list devices available
-          for name in "iPhone 16" "iPhone 16 Pro" "iPhone 15" "iPhone 17" "iPhone 17 Pro" "iPhone SE (3rd generation)"; do
-            if xcrun simctl list devices available | grep -q "${name}"; then
-              echo "name=${name}" >> "$GITHUB_OUTPUT"
-              exit 0
+          JSON=$(xcrun simctl list devices available -j)
+          UDID=""
+          NAME=""
+          for want in "iPhone 16" "iPhone 16 Pro" "iPhone 15" "iPhone 17" "iPhone 17 Pro" "iPhone SE (3rd generation)"; do
+            u=$(echo "$JSON" | jq -r --arg n "$want" '
+              [.devices | to_entries[] | .value[]?
+                | objects
+                | select((.isAvailable == true) and (.name == $n) and ((.udid | type) == "string") and (.udid != ""))]
+              | .[0].udid // empty
+            ')
+            if [[ -n "$u" && "$u" != "null" ]]; then
+              UDID="$u"
+              NAME="$want"
+              break
             fi
           done
-          echo "name=iPhone 16" >> "$GITHUB_OUTPUT"
+          if [[ -z "$UDID" ]]; then
+            pick=$(echo "$JSON" | jq -c '
+              [.devices | to_entries[] | .value[]?
+                | objects
+                | select((.isAvailable == true) and ((.udid | type) == "string") and (.name | test("iPhone")))]
+              | .[0] // empty
+            ')
+            if [[ -n "$pick" && "$pick" != "null" ]]; then
+              UDID=$(echo "$pick" | jq -r '.udid // empty')
+              NAME=$(echo "$pick" | jq -r '.name // empty')
+            fi
+          fi
+          if [[ -z "$UDID" ]]; then
+            echo "No available iOS Simulator device with a UDID was found." >&2
+            exit 1
+          fi
+          {
+            echo "name=$NAME"
+            echo "udid=$UDID"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Boot simulator
+        run: |
+          set -eo pipefail
+          UDID="${{ steps.sim.outputs.udid }}"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
 
       - name: Unit tests (WCSArtGalleryAppTests only)
         run: |
           set -eo pipefail
           xcodebuild test \
             -scheme WCSArtGalleryApp \
-            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            -destination-timeout 300 \
+            -parallel-testing-enabled NO \
             -only-testing:WCSArtGalleryAppTests \
             -resultBundlePath "${{ runner.temp }}/WCSUnitTests.xcresult"
