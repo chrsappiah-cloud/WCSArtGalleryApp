@@ -10,6 +10,7 @@ backend/**/__pycache__/
 backend/**/*.pyc
 backend/.pytest_cache/
 backend/wcs_gallery.db
+backend/.env
 
 cloudflare-worker/node_modules/
 cloudflare-worker/.wrangler/
