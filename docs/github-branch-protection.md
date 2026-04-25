@@ -1,5 +1,7 @@
 # Enforcing CI on GitHub
 
+These checks apply to **WCSArtGalleryApp** only (this repository). The **AfricanFashionApp** project is a separate repo with its own workflows.
+
 After the first push to `main`, open **Settings → Branches → Branch protection rules → Add rule** (or edit the rule for `main`).
 
 1. Enable **Require a pull request before merging** (recommended).
